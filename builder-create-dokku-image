@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/functions"
+set -eo pipefail
+[[ $DOKKU_TRACE ]] && set -x
+
+hook-dynamic-dockerfile-builder-create-dokku-image() {
+  declare BUILDER_TYPE="$1" APP="$2" SOURCECODE_WORK_DIR="$3" DOKKU_IMAGE="$4"
+  declare DOCKERFILE_PATH="$(fn-dynamic-dockerfile-dockerfile-path "$APP")"
+
+  if [[ -z "$DOCKERFILE_PATH" ]]; then
+    return
+  fi
+
+  fn-dynamic-dockerfile-validate-path "$BUILDER_TYPE" "$APP" "$SOURCECODE_WORK_DIR"
+
+  declare IMAGE_NAME="$(fn-dynamic-dockerfile-image-name "$APP")"
+
+  dokku_log_info1 "$PLUGIN_NAME: build base image from $DOCKERFILE_PATH/Dockerfile"
+
+  "$DOCKER_BIN" image build "--label=com.dokku.app-name=${APP}" $DOKKU_GLOBAL_BUILD_ARGS -t "$IMAGE_NAME" "$SOURCECODE_WORK_DIR/$DOCKERFILE_PATH"
+
+  dokku_log_info1 "$PLUGIN_NAME: built base image $IMAGE_NAME"
+}
+
+hook-dynamic-dockerfile-builder-create-dokku-image "$@"

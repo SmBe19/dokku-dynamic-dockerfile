@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+PLUGIN_NAME="dynamic-dockerfile"
+PLUGIN_DOCKER_IMAGE_TAG="dynamic-dockerfile-base"

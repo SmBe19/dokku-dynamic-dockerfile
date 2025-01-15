@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/config"
+source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/common/property-functions"
+set -eo pipefail
+[[ $DOKKU_TRACE ]] && set -x
+
+fn-dynamic-dockerfile-dockerfile-path() {
+  declare APP="$1"
+  echo $(fn-plugin-property-get-default "$PLUGIN_NAME" "$APP" "dockerfile-path" "")
+}
+
+fn-dynamic-dockerfile-validate-path() {
+  declare BUILDER_TYPE="$1" APP="$2" SOURCECODE_WORK_DIR="$3"
+  declare DOCKERFILE_PATH="$(fn-dynamic-dockerfile-dockerfile-path "$APP")"
+
+  if [[ -z "$DOCKERFILE_PATH" ]]; then
+    return
+  fi
+
+  if [[ "$BUILDER_TYPE" != "herokuish" ]]; then
+    dokku_log_fail "$PLUGIN_NAME: Can only run plugin with herokuish builder"
+  fi
+
+  if [[ ! -f "$SOURCECODE_WORK_DIR/$DOCKERFILE_PATH/Dockerfile" ]]; then
+    dokku_log_fail "$PLUGIN_NAME: Dockerfile at $DOCKERFILE_PATH/Dockerfile does not exist"
+  fi
+}
+
+fn-dynamic-dockerfile-image-name() {
+  declare APP="$1"
+  echo "dokku/$APP:$PLUGIN_DOCKER_IMAGE_TAG"
+}

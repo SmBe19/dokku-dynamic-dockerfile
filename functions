@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/internal-functions"
+set -eo pipefail
+[[ $DOKKU_TRACE ]] && set -x
+
+cmd-dynamic-dockerfile-set() {
+  [[ "$1" == "$PLUGIN_NAME:set" ]] && shift 1
+  declare APP="$1" KEY="$2" VALUE="$3"
+  APP=${APP:="$DOKKU_APP_NAME"}
+  declare VALID_KEYS=("dockerfile-path")
+
+  [[ -z "$APP" ]] && dokku_log_fail "Please specify an app to run the command on"
+  if ! fn-in-array "$KEY" "${VALID_KEYS[@]}"; then
+    dokku_log_fail "Please specify a valid key"
+  fi
+  verify_app_name "$APP"
+
+  if [[ -n "$VALUE" ]]; then
+    dokku_log_info2_quiet "Setting ${KEY} to ${VALUE}"
+    fn-plugin-property-write "$PLUGIN_NAME" "$APP" "$KEY" "$VALUE"
+  else
+    dokku_log_info2_quiet "Unsetting ${KEY}"
+    fn-plugin-property-delete "$PLUGIN_NAME" "$APP" "$KEY"
+  fi
+}
+
+cmd-dynamic-dockerfile-report() {
+  [[ "$1" == "$PLUGIN_NAME:report" ]] && shift 1
+  declare APP="$1"
+
+  if [[ -z "$APP" ]]; then
+    for app in $(dokku_apps); do
+      echo "$app: $(fn-dynamic-dockerfile-dockerfile-path "$app")"
+    done
+  else
+    echo "$APP: $(fn-dynamic-dockerfile-dockerfile-path "$APP")"
+  fi
+}

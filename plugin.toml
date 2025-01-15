@@ -1,0 +1,6 @@
+[plugin]
+name = "dokku-dynamic-dockerfile"
+description = "Dynamically build the stack image from a Dockerfile in the project"
+version = "0.0.1"
+website_url = "https://github.com/SmBe19/dokku-dynamic-dockerfile"
+[plugin.config]

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/config"
+set -eo pipefail
+[[ $DOKKU_TRACE ]] && set -x
+
+case "$1" in
+  help)
+    cat <<help_desc
+    $PLUGIN_NAME, Plugin for managing dynamic dockerfiles
+help_desc
+    ;;
+  $PLUGIN_NAME | $PLUGIN_NAME:help | $PLUGIN_NAME:default)
+    cat <<help_desc
+Usage: dokku $PLUGIN_NAME[:COMMAND]
+
+Manage dynamic dockerfiles
+
+Additional commands:
+    $PLUGIN_NAME:set <app> dockerfile-path [path]   Set the path to the dockerfile
+    $PLUGIN_NAME:report [app]                       Display a report for one or more apps
+
+To restore the default, call set without a path.
+help_desc
+    ;;
+  *)
+    exit $DOKKU_NOT_IMPLEMENTED_EXIT
+    ;;
+esac
